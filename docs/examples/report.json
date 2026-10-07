@@ -1,0 +1,818 @@
+{
+  "tool": "security-log-analyzer",
+  "version": "1.0.0",
+  "generated_at": "2026-10-07T09:14:45.917961+01:00",
+  "input": {
+    "files": [
+      "samples/auth.log",
+      "samples/access.log",
+      "samples/nginx_access.log"
+    ],
+    "total_lines": 675,
+    "auth_events": 89,
+    "access_events": 527,
+    "ignored_lines": 59
+  },
+  "summary": {
+    "findings": 24,
+    "by_severity": {
+      "critical": 2,
+      "high": 12,
+      "medium": 10,
+      "low": 0,
+      "info": 0
+    },
+    "suspicious_ips": 12
+  },
+  "auth": {
+    "failed_logins": 78,
+    "successful_logins": 7,
+    "unique_failing_ips": 10,
+    "top_targeted_users": [
+      [
+        "root",
+        20
+      ],
+      [
+        "admin",
+        20
+      ],
+      [
+        "deploy",
+        12
+      ],
+      [
+        "ubuntu",
+        8
+      ],
+      [
+        "oracle",
+        2
+      ],
+      [
+        "test",
+        2
+      ],
+      [
+        "postgres",
+        2
+      ],
+      [
+        "git",
+        2
+      ],
+      [
+        "ftpuser",
+        2
+      ],
+      [
+        "pi",
+        2
+      ]
+    ],
+    "top_failing_ips": [
+      [
+        "203.0.113.45",
+        41
+      ],
+      [
+        "203.0.113.77",
+        18
+      ],
+      [
+        "192.0.2.150",
+        12
+      ],
+      [
+        "198.51.100.60",
+        1
+      ],
+      [
+        "198.51.100.61",
+        1
+      ],
+      [
+        "198.51.100.62",
+        1
+      ],
+      [
+        "198.51.100.63",
+        1
+      ],
+      [
+        "198.51.100.64",
+        1
+      ],
+      [
+        "198.51.100.65",
+        1
+      ],
+      [
+        "198.51.100.66",
+        1
+      ]
+    ],
+    "successful_logins_by_user": [
+      [
+        "deploy",
+        6
+      ],
+      [
+        "root",
+        1
+      ]
+    ]
+  },
+  "web": {
+    "requests": 527,
+    "unique_ips": 58,
+    "status_codes": {
+      "200": 390,
+      "304": 39,
+      "400": 3,
+      "401": 12,
+      "403": 2,
+      "404": 74,
+      "500": 7
+    },
+    "top_ips": [
+      [
+        "203.0.113.21",
+        46
+      ],
+      [
+        "198.51.100.200",
+        40
+      ],
+      [
+        "192.0.2.33",
+        21
+      ],
+      [
+        "198.51.100.19",
+        15
+      ],
+      [
+        "203.0.113.9",
+        14
+      ],
+      [
+        "198.51.100.21",
+        13
+      ],
+      [
+        "198.51.100.16",
+        13
+      ],
+      [
+        "198.51.100.34",
+        13
+      ],
+      [
+        "203.0.113.88",
+        12
+      ],
+      [
+        "198.51.100.30",
+        11
+      ]
+    ],
+    "top_404_paths": [
+      [
+        "/old/",
+        2
+      ],
+      [
+        "/",
+        1
+      ],
+      [
+        "/images/hero.webp",
+        1
+      ],
+      [
+        "/assets/css/main.css",
+        1
+      ],
+      [
+        "/about",
+        1
+      ],
+      [
+        "/admin/",
+        1
+      ],
+      [
+        "/backup/",
+        1
+      ],
+      [
+        "/test/",
+        1
+      ],
+      [
+        "/dev/",
+        1
+      ],
+      [
+        "/staging/",
+        1
+      ]
+    ],
+    "methods": {
+      "GET": 474,
+      "POST": 52,
+      "-": 1
+    }
+  },
+  "findings": [
+    {
+      "rule_id": "WEB-LOG4SHELL",
+      "title": "Log4Shell (JNDI injection) attempt",
+      "severity": "critical",
+      "category": "rce",
+      "description": "2 request(s) from 203.0.113.130 matched log4shell (jndi injection) attempt patterns.",
+      "ip": "203.0.113.130",
+      "count": 2,
+      "first_seen": "2026-10-06T16:31:00+01:00",
+      "last_seen": "2026-10-06T16:31:03+01:00",
+      "evidence": [
+        "GET / -> 200",
+        "GET /?x=${${lower:j}ndi:dns://x.example} -> 200",
+        "2 matching request(s) returned 2xx: verify they were blocked"
+      ]
+    },
+    {
+      "rule_id": "SSH-LOGIN-AFTER-BRUTE-FORCE",
+      "title": "Successful SSH login after repeated failures",
+      "severity": "critical",
+      "category": "compromise",
+      "description": "192.0.2.150 logged in as 'deploy' via password after 12 failed attempts. Treat the account as compromised until proven otherwise.",
+      "ip": "192.0.2.150",
+      "count": 1,
+      "first_seen": "2026-10-05T22:44:41+01:00",
+      "last_seen": "2026-10-05T22:44:41+01:00",
+      "evidence": [
+        "Oct  5 22:44:41 web01 sshd[4755]: Accepted password for deploy from 192.0.2.150 port 52811 ssh2"
+      ]
+    },
+    {
+      "rule_id": "SSH-BRUTE-FORCE",
+      "title": "SSH brute-force attack",
+      "severity": "high",
+      "category": "brute-force",
+      "description": "41 failed SSH logins from 203.0.113.45, peaking at 41 within 10 minutes.",
+      "ip": "203.0.113.45",
+      "count": 41,
+      "first_seen": "2026-10-05T02:14:05+01:00",
+      "last_seen": "2026-10-05T02:20:00+01:00",
+      "evidence": [
+        "Targeted users: root (20), admin (13), ubuntu (8)",
+        "Peak window: 2026-10-05 02:14:05 to 02:20:00"
+      ]
+    },
+    {
+      "rule_id": "WEB-LOGIN-BRUTE-FORCE",
+      "title": "Web login brute-force attack",
+      "severity": "high",
+      "category": "brute-force",
+      "description": "40 login POSTs from 198.51.100.200, peaking at 40 within 5 minutes.",
+      "ip": "198.51.100.200",
+      "count": 40,
+      "first_seen": "2026-10-06T15:10:00+01:00",
+      "last_seen": "2026-10-06T15:12:31+01:00",
+      "evidence": [
+        "Endpoints: /wp-login.php (34), /xmlrpc.php (6)",
+        "Status codes: 200 (40)"
+      ]
+    },
+    {
+      "rule_id": "SSH-BRUTE-FORCE",
+      "title": "SSH brute-force attack",
+      "severity": "high",
+      "category": "brute-force",
+      "description": "18 failed SSH logins from 203.0.113.77, peaking at 18 within 10 minutes.",
+      "ip": "203.0.113.77",
+      "count": 18,
+      "first_seen": "2026-10-05T05:03:05+01:00",
+      "last_seen": "2026-10-05T05:08:47+01:00",
+      "evidence": [
+        "Targeted users: oracle (2), test (2), postgres (2), git (2), ftpuser (2)",
+        "Peak window: 2026-10-05 05:03:05 to 05:08:47"
+      ]
+    },
+    {
+      "rule_id": "WEB-SQLI",
+      "title": "SQL injection attempt",
+      "severity": "high",
+      "category": "injection",
+      "description": "14 request(s) from 203.0.113.9 matched sql injection attempt patterns.",
+      "ip": "203.0.113.9",
+      "count": 14,
+      "first_seen": "2026-10-06T08:05:00+01:00",
+      "last_seen": "2026-10-06T08:05:40+01:00",
+      "evidence": [
+        "GET /products.php?id=12%27%20AND%201%3D1--%20- -> 200",
+        "GET /products.php?id=12%27%20OR%20%271%27%3D%271 -> 200",
+        "GET /products.php?id=12%20UNION%20ALL%20SELECT%20NULL%2CNULL%2CNULL--%20- -> 200",
+        "GET /products.php?id=12%27%20AND%20SLEEP%285%29--%20- -> 500",
+        "GET /products.php?id=12%20AND%20%28SELECT%201%20FROM%20information_schema.tables%29 -> 200",
+        "7 matching request(s) returned 2xx: verify they were blocked"
+      ]
+    },
+    {
+      "rule_id": "SSH-BRUTE-FORCE",
+      "title": "SSH brute-force attack",
+      "severity": "high",
+      "category": "brute-force",
+      "description": "12 failed SSH logins from 192.0.2.150, peaking at 12 within 10 minutes.",
+      "ip": "192.0.2.150",
+      "count": 12,
+      "first_seen": "2026-10-05T22:40:05+01:00",
+      "last_seen": "2026-10-05T22:44:26+01:00",
+      "evidence": [
+        "Targeted users: deploy (12)",
+        "Peak window: 2026-10-05 22:40:05 to 22:44:26"
+      ]
+    },
+    {
+      "rule_id": "WEB-LOGIN-BRUTE-FORCE",
+      "title": "Web login brute-force attack",
+      "severity": "high",
+      "category": "brute-force",
+      "description": "12 login POSTs from 203.0.113.88, peaking at 12 within 5 minutes.",
+      "ip": "203.0.113.88",
+      "count": 12,
+      "first_seen": "2026-10-06T12:00:00+01:00",
+      "last_seen": "2026-10-06T12:01:39+01:00",
+      "evidence": [
+        "Endpoints: /user/login (12)",
+        "Status codes: 401 (12)"
+      ]
+    },
+    {
+      "rule_id": "WEB-PATH-TRAVERSAL",
+      "title": "Path traversal / local file inclusion attempt",
+      "severity": "high",
+      "category": "traversal",
+      "description": "5 request(s) from 192.0.2.88 matched path traversal / local file inclusion attempt patterns.",
+      "ip": "192.0.2.88",
+      "count": 5,
+      "first_seen": "2026-10-06T13:45:00+01:00",
+      "last_seen": "2026-10-06T13:45:28+01:00",
+      "evidence": [
+        "GET /download.php?file=../../../../etc/passwd -> 200",
+        "GET /download.php?file=..%2f..%2f..%2fetc%2fpasswd -> 200",
+        "GET /download.php?file=php://filter/convert.base64-encode/resource=index.php -> 200",
+        "GET /download.php?file=....//....//etc/shadow -> 400",
+        "GET /download.php?file=..\\..\\windows\\win.ini -> 400",
+        "3 matching request(s) returned 2xx: verify they were blocked"
+      ]
+    },
+    {
+      "rule_id": "WEB-XSS",
+      "title": "Cross-site scripting (XSS) attempt",
+      "severity": "high",
+      "category": "injection",
+      "description": "4 request(s) from 192.0.2.66 matched cross-site scripting (xss) attempt patterns.",
+      "ip": "192.0.2.66",
+      "count": 4,
+      "first_seen": "2026-10-06T11:02:00+01:00",
+      "last_seen": "2026-10-06T11:03:00+01:00",
+      "evidence": [
+        "GET /search?q=%253Cscript%253Ealert%25281%2529%253C/script%253E -> 200",
+        "GET /search?q=%2522%253E%253Cimg%2520src%253Dx%2520onerror%253Dalert%2528document.cookie%2529%253E -> 200",
+        "GET /search?q=%253Csvg/onload%253Dalert%2528%2527xss%2527%2529%253E -> 200",
+        "GET /search?q=javascript%253Aalert%25281%2529 -> 200",
+        "4 matching request(s) returned 2xx: verify they were blocked"
+      ]
+    },
+    {
+      "rule_id": "WEB-PATH-TRAVERSAL",
+      "title": "Path traversal / local file inclusion attempt",
+      "severity": "high",
+      "category": "traversal",
+      "description": "1 request(s) from 192.0.2.33 matched path traversal / local file inclusion attempt patterns.",
+      "ip": "192.0.2.33",
+      "count": 1,
+      "first_seen": "2026-10-06T09:00:20+01:00",
+      "last_seen": "2026-10-06T09:00:20+01:00",
+      "evidence": [
+        "GET /index.php?page=../../../etc/passwd -> 200",
+        "1 matching request(s) returned 2xx: verify they were blocked"
+      ]
+    },
+    {
+      "rule_id": "WEB-COMMAND-INJECTION",
+      "title": "OS command injection attempt",
+      "severity": "high",
+      "category": "rce",
+      "description": "1 request(s) from 192.0.2.66 matched os command injection attempt patterns.",
+      "ip": "192.0.2.66",
+      "count": 1,
+      "first_seen": "2026-10-06T11:03:20+01:00",
+      "last_seen": "2026-10-06T11:03:20+01:00",
+      "evidence": [
+        "GET /cgi-bin/ping.cgi?host=127.0.0.1%3Bcat%20/etc/passwd -> 404"
+      ]
+    },
+    {
+      "rule_id": "WEB-PATH-TRAVERSAL",
+      "title": "Path traversal / local file inclusion attempt",
+      "severity": "high",
+      "category": "traversal",
+      "description": "1 request(s) from 192.0.2.66 matched path traversal / local file inclusion attempt patterns.",
+      "ip": "192.0.2.66",
+      "count": 1,
+      "first_seen": "2026-10-06T11:03:20+01:00",
+      "last_seen": "2026-10-06T11:03:20+01:00",
+      "evidence": [
+        "GET /cgi-bin/ping.cgi?host=127.0.0.1%3Bcat%20/etc/passwd -> 404"
+      ]
+    },
+    {
+      "rule_id": "WEB-SHELLSHOCK",
+      "title": "Shellshock (CVE-2014-6271) attempt",
+      "severity": "high",
+      "category": "rce",
+      "description": "1 request(s) from 203.0.113.130 matched shellshock (cve-2014-6271) attempt patterns.",
+      "ip": "203.0.113.130",
+      "count": 1,
+      "first_seen": "2026-10-06T16:31:06+01:00",
+      "last_seen": "2026-10-06T16:31:06+01:00",
+      "evidence": [
+        "GET /cgi-bin/status -> 404"
+      ]
+    },
+    {
+      "rule_id": "WEB-SCANNER-UA",
+      "title": "Known vulnerability scanner",
+      "severity": "medium",
+      "category": "reconnaissance",
+      "description": "46 request(s) from 203.0.113.21 identified as Gobuster.",
+      "ip": "203.0.113.21",
+      "count": 46,
+      "first_seen": "2026-10-06T10:20:00+01:00",
+      "last_seen": "2026-10-06T10:21:27+01:00",
+      "evidence": [
+        "User-Agent: gobuster/3.6"
+      ]
+    },
+    {
+      "rule_id": "WEB-404-SCAN",
+      "title": "404 scanning burst",
+      "severity": "medium",
+      "category": "reconnaissance",
+      "description": "44 requests from 203.0.113.21 returned 404, with 44 within 5 minutes: typical of directory brute-forcing.",
+      "ip": "203.0.113.21",
+      "count": 44,
+      "first_seen": "2026-10-06T10:20:00+01:00",
+      "last_seen": "2026-10-06T10:21:25+01:00",
+      "evidence": [
+        "Sample paths: /admin/, /backup/, /old/, /test/, /dev/, /staging/"
+      ]
+    },
+    {
+      "rule_id": "WEB-SCANNER-UA",
+      "title": "Known vulnerability scanner",
+      "severity": "medium",
+      "category": "reconnaissance",
+      "description": "21 request(s) from 192.0.2.33 identified as Nikto.",
+      "ip": "192.0.2.33",
+      "count": 21,
+      "first_seen": "2026-10-06T09:00:00+01:00",
+      "last_seen": "2026-10-06T09:00:20+01:00",
+      "evidence": [
+        "User-Agent: Mozilla/5.00 (Nikto/2.5.0) (Evasions:None) (Test:000003)"
+      ]
+    },
+    {
+      "rule_id": "WEB-404-SCAN",
+      "title": "404 scanning burst",
+      "severity": "medium",
+      "category": "reconnaissance",
+      "description": "20 requests from 192.0.2.33 returned 404, with 20 within 5 minutes: typical of directory brute-forcing.",
+      "ip": "192.0.2.33",
+      "count": 20,
+      "first_seen": "2026-10-06T09:00:00+01:00",
+      "last_seen": "2026-10-06T09:00:19+01:00",
+      "evidence": [
+        "Sample paths: /admin.php, /login.php, /phpinfo.php, /test.php, /info.php, /.htpasswd"
+      ]
+    },
+    {
+      "rule_id": "WEB-SCANNER-UA",
+      "title": "Known vulnerability scanner",
+      "severity": "medium",
+      "category": "reconnaissance",
+      "description": "14 request(s) from 203.0.113.9 identified as sqlmap.",
+      "ip": "203.0.113.9",
+      "count": 14,
+      "first_seen": "2026-10-06T08:05:00+01:00",
+      "last_seen": "2026-10-06T08:05:40+01:00",
+      "evidence": [
+        "User-Agent: sqlmap/1.8.9#stable (https://sqlmap.org)"
+      ]
+    },
+    {
+      "rule_id": "SSH-USER-ENUMERATION",
+      "title": "SSH username enumeration",
+      "severity": "medium",
+      "category": "reconnaissance",
+      "description": "203.0.113.77 tried 9 usernames that do not exist on the host.",
+      "ip": "203.0.113.77",
+      "count": 9,
+      "first_seen": "2026-10-05T05:03:05+01:00",
+      "last_seen": "2026-10-05T05:08:47+01:00",
+      "evidence": [
+        "Usernames: ftpuser, git, guest, hadoop, oracle, pi, postgres, support, test"
+      ]
+    },
+    {
+      "rule_id": "SSH-DISTRIBUTED-ATTACK",
+      "title": "Distributed attack on one account",
+      "severity": "medium",
+      "category": "brute-force",
+      "description": "Account 'admin' had failed logins from 8 different IP addresses.",
+      "ip": null,
+      "count": 8,
+      "first_seen": null,
+      "last_seen": null,
+      "evidence": [
+        "Source IPs: 198.51.100.60, 198.51.100.61, 198.51.100.62, 198.51.100.63, 198.51.100.64, 198.51.100.65, 198.51.100.66, 203.0.113.45"
+      ]
+    },
+    {
+      "rule_id": "WEB-SENSITIVE-FILE",
+      "title": "Probe for sensitive files or admin tools",
+      "severity": "medium",
+      "category": "reconnaissance",
+      "description": "6 request(s) from 203.0.113.21 matched probe for sensitive files or admin tools patterns.",
+      "ip": "203.0.113.21",
+      "count": 6,
+      "first_seen": "2026-10-06T10:21:17+01:00",
+      "last_seen": "2026-10-06T10:21:27+01:00",
+      "evidence": [
+        "GET /.env -> 404",
+        "GET /.git/config -> 403",
+        "GET /backup.sql -> 404",
+        "GET /wp-config.php.bak -> 404",
+        "GET /phpmyadmin/ -> 404"
+      ]
+    },
+    {
+      "rule_id": "WEB-SENSITIVE-FILE",
+      "title": "Probe for sensitive files or admin tools",
+      "severity": "medium",
+      "category": "reconnaissance",
+      "description": "4 request(s) from 192.0.2.33 matched probe for sensitive files or admin tools patterns.",
+      "ip": "192.0.2.33",
+      "count": 4,
+      "first_seen": "2026-10-06T09:00:05+01:00",
+      "last_seen": "2026-10-06T09:00:19+01:00",
+      "evidence": [
+        "GET /.htpasswd -> 404",
+        "GET /config.json -> 404",
+        "GET /db.sql -> 404",
+        "GET /.DS_Store -> 404"
+      ]
+    },
+    {
+      "rule_id": "SSH-ROOT-LOGIN",
+      "title": "Direct root login over SSH",
+      "severity": "medium",
+      "category": "policy",
+      "description": "root logged in directly from 198.51.100.10. Consider PermitRootLogin no and key-only authentication.",
+      "ip": "198.51.100.10",
+      "count": 1,
+      "first_seen": "2026-10-05T09:12:05+01:00",
+      "last_seen": "2026-10-05T09:12:05+01:00",
+      "evidence": [
+        "Oct  5 09:12:05 web01 sshd[44892]: Accepted publickey for root from 198.51.100.10 port 51022 ssh2: RSA SHA256:r00t"
+      ]
+    }
+  ],
+  "suspicious_ips": [
+    {
+      "ip": "192.0.2.150",
+      "score": 86,
+      "severity": "critical",
+      "findings": 2,
+      "categories": [
+        "brute-force",
+        "compromise"
+      ],
+      "rules": [
+        "SSH-BRUTE-FORCE",
+        "SSH-LOGIN-AFTER-BRUTE-FORCE"
+      ],
+      "auth_failures": 12,
+      "requests": 0,
+      "first_seen": "2026-10-05T22:40:05+01:00",
+      "last_seen": "2026-10-05T22:44:41+01:00",
+      "network": "documentation"
+    },
+    {
+      "ip": "203.0.113.130",
+      "score": 85,
+      "severity": "critical",
+      "findings": 2,
+      "categories": [
+        "rce"
+      ],
+      "rules": [
+        "WEB-LOG4SHELL",
+        "WEB-SHELLSHOCK"
+      ],
+      "auth_failures": 0,
+      "requests": 3,
+      "first_seen": "2026-10-06T16:31:00+01:00",
+      "last_seen": "2026-10-06T16:31:06+01:00",
+      "network": "documentation"
+    },
+    {
+      "ip": "192.0.2.33",
+      "score": 74,
+      "severity": "high",
+      "findings": 4,
+      "categories": [
+        "reconnaissance",
+        "traversal"
+      ],
+      "rules": [
+        "WEB-404-SCAN",
+        "WEB-PATH-TRAVERSAL",
+        "WEB-SCANNER-UA",
+        "WEB-SENSITIVE-FILE"
+      ],
+      "auth_failures": 0,
+      "requests": 21,
+      "first_seen": "2026-10-06T09:00:00+01:00",
+      "last_seen": "2026-10-06T09:00:20+01:00",
+      "network": "documentation"
+    },
+    {
+      "ip": "192.0.2.66",
+      "score": 65,
+      "severity": "high",
+      "findings": 3,
+      "categories": [
+        "injection",
+        "rce",
+        "traversal"
+      ],
+      "rules": [
+        "WEB-COMMAND-INJECTION",
+        "WEB-PATH-TRAVERSAL",
+        "WEB-XSS"
+      ],
+      "auth_failures": 0,
+      "requests": 5,
+      "first_seen": "2026-10-06T11:02:00+01:00",
+      "last_seen": "2026-10-06T11:03:20+01:00",
+      "network": "documentation"
+    },
+    {
+      "ip": "203.0.113.77",
+      "score": 62,
+      "severity": "high",
+      "findings": 2,
+      "categories": [
+        "brute-force",
+        "reconnaissance"
+      ],
+      "rules": [
+        "SSH-BRUTE-FORCE",
+        "SSH-USER-ENUMERATION"
+      ],
+      "auth_failures": 18,
+      "requests": 0,
+      "first_seen": "2026-10-05T05:03:05+01:00",
+      "last_seen": "2026-10-05T05:08:47+01:00",
+      "network": "documentation"
+    },
+    {
+      "ip": "203.0.113.9",
+      "score": 62,
+      "severity": "high",
+      "findings": 2,
+      "categories": [
+        "injection",
+        "reconnaissance"
+      ],
+      "rules": [
+        "WEB-SCANNER-UA",
+        "WEB-SQLI"
+      ],
+      "auth_failures": 0,
+      "requests": 14,
+      "first_seen": "2026-10-06T08:05:00+01:00",
+      "last_seen": "2026-10-06T08:05:40+01:00",
+      "network": "documentation"
+    },
+    {
+      "ip": "198.51.100.200",
+      "score": 59,
+      "severity": "high",
+      "findings": 1,
+      "categories": [
+        "brute-force"
+      ],
+      "rules": [
+        "WEB-LOGIN-BRUTE-FORCE"
+      ],
+      "auth_failures": 0,
+      "requests": 40,
+      "first_seen": "2026-10-06T15:10:00+01:00",
+      "last_seen": "2026-10-06T15:12:31+01:00",
+      "network": "documentation"
+    },
+    {
+      "ip": "203.0.113.45",
+      "score": 59,
+      "severity": "high",
+      "findings": 1,
+      "categories": [
+        "brute-force"
+      ],
+      "rules": [
+        "SSH-BRUTE-FORCE"
+      ],
+      "auth_failures": 41,
+      "requests": 0,
+      "first_seen": "2026-10-05T02:14:05+01:00",
+      "last_seen": "2026-10-05T02:20:00+01:00",
+      "network": "documentation"
+    },
+    {
+      "ip": "203.0.113.88",
+      "score": 56,
+      "severity": "high",
+      "findings": 1,
+      "categories": [
+        "brute-force"
+      ],
+      "rules": [
+        "WEB-LOGIN-BRUTE-FORCE"
+      ],
+      "auth_failures": 0,
+      "requests": 12,
+      "first_seen": "2026-10-06T12:00:00+01:00",
+      "last_seen": "2026-10-06T12:01:39+01:00",
+      "network": "documentation"
+    },
+    {
+      "ip": "192.0.2.88",
+      "score": 55,
+      "severity": "high",
+      "findings": 1,
+      "categories": [
+        "traversal"
+      ],
+      "rules": [
+        "WEB-PATH-TRAVERSAL"
+      ],
+      "auth_failures": 0,
+      "requests": 5,
+      "first_seen": "2026-10-06T13:45:00+01:00",
+      "last_seen": "2026-10-06T13:45:28+01:00",
+      "network": "documentation"
+    },
+    {
+      "ip": "203.0.113.21",
+      "score": 49,
+      "severity": "medium",
+      "findings": 3,
+      "categories": [
+        "reconnaissance"
+      ],
+      "rules": [
+        "WEB-404-SCAN",
+        "WEB-SCANNER-UA",
+        "WEB-SENSITIVE-FILE"
+      ],
+      "auth_failures": 0,
+      "requests": 46,
+      "first_seen": "2026-10-06T10:20:00+01:00",
+      "last_seen": "2026-10-06T10:21:27+01:00",
+      "network": "documentation"
+    },
+    {
+      "ip": "198.51.100.10",
+      "score": 30,
+      "severity": "medium",
+      "findings": 1,
+      "categories": [
+        "policy"
+      ],
+      "rules": [
+        "SSH-ROOT-LOGIN"
+      ],
+      "auth_failures": 0,
+      "requests": 0,
+      "first_seen": "2026-10-05T09:12:05+01:00",
+      "last_seen": "2026-10-05T09:12:05+01:00",
+      "network": "documentation"
+    }
+  ]
+}
